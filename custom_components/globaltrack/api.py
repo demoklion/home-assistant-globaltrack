@@ -11,6 +11,7 @@ import aiohttp
 _LOGGER = logging.getLogger(__name__)
 
 GPS_DIVISOR = 3600000.0
+USER_AGENT = "HomeAssistant-GlobalTrack"
 
 
 class GlobalTrackAuthError(Exception):
@@ -110,6 +111,11 @@ class GlobalTrackApi:
         self._username = username
         self._password = password
         self._ft_session: str | None = None
+        # Vehicle cache keyed by id. The /kaview endpoint streams deltas:
+        # `insert` for new/full entries, `update` for changed fields,
+        # `delete` for removals. We keep a running snapshot here so the
+        # coordinator always sees the full fleet on every poll.
+        self._vehicles_raw: dict[int, dict[str, Any]] = {}
 
     async def authenticate(self) -> None:
         """Authenticate with the GlobalTrack portal and store the session cookie.
@@ -122,12 +128,16 @@ class GlobalTrackApi:
             "ft_username": self._username,
             "ft_password": self._password,
         }
+        # New session: discard cached state so the next /kaview call returns
+        # a full `insert` dump instead of deltas against the old session.
+        self._vehicles_raw = {}
 
         try:
             # Disable auto-redirect so we can capture the Set-Cookie header.
             async with self._session.post(
                 url,
                 data=payload,
+                headers={"User-Agent": USER_AGENT},
                 allow_redirects=False,
             ) as resp:
                 # Extract ft_session from Set-Cookie header.
@@ -197,6 +207,7 @@ class GlobalTrackApi:
             async with self._session.post(
                 url,
                 cookies={"ft_session": self._ft_session},  # type: ignore[arg-type]
+                headers={"User-Agent": USER_AGENT},
             ) as resp:
                 content_type = resp.headers.get("Content-Type", "")
 
@@ -229,18 +240,42 @@ class GlobalTrackApi:
                 f"Unexpected error fetching vehicles: {err}"
             ) from err
 
-        # Parse the device list from the response.
+        # Merge the server-side delta into our cached snapshot.
+        # `insert` entries are full records; `update` entries are partial
+        # and must be merged on top of the cached record; `delete` is a
+        # list of ids to drop.
         devices = data.get("devices", {})
-        insert_list = devices.get("insert", [])
+        for record in devices.get("insert", []):
+            vid = record.get("id")
+            if vid is not None:
+                self._vehicles_raw[vid] = record
+        for record in devices.get("update", []):
+            vid = record.get("id")
+            if vid is None:
+                continue
+            existing = self._vehicles_raw.get(vid)
+            if existing is None:
+                # Delta arrived before we had a baseline — treat as full.
+                self._vehicles_raw[vid] = record
+            else:
+                existing.update(record)
+        for vid in devices.get("delete", []) or []:
+            self._vehicles_raw.pop(vid, None)
 
         vehicles: list[VehicleData] = []
-        for device in insert_list:
+        for record in self._vehicles_raw.values():
             try:
-                vehicles.append(_parse_vehicle(device))
+                vehicles.append(_parse_vehicle(record))
             except (KeyError, IndexError, TypeError) as err:
                 _LOGGER.warning(
                     "Skipping vehicle due to parse error: %s", err
                 )
 
-        _LOGGER.debug("Fetched %d vehicles from GlobalTrack", len(vehicles))
+        _LOGGER.debug(
+            "Fetched %d vehicles from GlobalTrack (insert=%d update=%d delete=%d)",
+            len(vehicles),
+            len(devices.get("insert", [])),
+            len(devices.get("update", [])),
+            len(devices.get("delete", []) or []),
+        )
         return vehicles

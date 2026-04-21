@@ -1,5 +1,9 @@
 # GlobalTrack Vehicle Tracker
 
+[![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
+[![GitHub release](https://img.shields.io/github/v/release/demoklion/home-assistant-globaltrack)](https://github.com/demoklion/home-assistant-globaltrack/releases)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+
 Home Assistant integration for [GlobalTrack](https://www.globaltrack.cz) / LogisCarE Commander vehicle tracking platforms.
 
 ## Features
@@ -57,6 +61,10 @@ automation:
 
 This is an unofficial, community-maintained integration. It is not affiliated with, endorsed by, or connected to GlobalTrack, LogisCarE, or GlobalSec. The integration relies on undocumented APIs and may break if the platform changes.
 
+## Author
+
+Built by [Ján Dugovič](https://jandu.top) with [Claude Code](https://claude.com/claude-code).
+
 ## License
 
-[MIT](LICENSE)
+[GPL-3.0](LICENSE)

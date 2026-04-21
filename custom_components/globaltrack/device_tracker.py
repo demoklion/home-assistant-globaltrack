@@ -48,17 +48,21 @@ class GlobalTrackDeviceTracker(GlobalTrackEntity, TrackerEntity):
     @property
     def latitude(self) -> float | None:
         """Return latitude value of the device."""
-        return self.vehicle.latitude
+        vehicle = self.vehicle
+        return vehicle.latitude if vehicle is not None else None
 
     @property
     def longitude(self) -> float | None:
         """Return longitude value of the device."""
-        return self.vehicle.longitude
+        vehicle = self.vehicle
+        return vehicle.longitude if vehicle is not None else None
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return extra state attributes."""
         vehicle = self.vehicle
+        if vehicle is None:
+            return {}
         return {
             "address": vehicle.address,
             "altitude": vehicle.altitude,

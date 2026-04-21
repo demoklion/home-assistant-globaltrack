@@ -1,9 +1,13 @@
 {
   "domain": "globaltrack",
   "name": "GlobalTrack",
+  "codeowners": ["@demoklion"],
   "config_flow": true,
+  "documentation": "https://github.com/demoklion/home-assistant-globaltrack",
   "integration_type": "hub",
   "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/demoklion/home-assistant-globaltrack/issues",
+  "loggers": ["custom_components.globaltrack"],
   "requirements": [],
-  "version": "0.1.0"
+  "version": "0.2.0"
 }

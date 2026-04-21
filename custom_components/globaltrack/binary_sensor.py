@@ -44,6 +44,7 @@ class GlobalTrackIgnitionSensor(GlobalTrackEntity, BinarySensorEntity):
         self._attr_unique_id = f"{vehicle_id}_ignition"
 
     @property
-    def is_on(self) -> bool:
+    def is_on(self) -> bool | None:
         """Return true if ignition is on."""
-        return self.vehicle.ignition
+        vehicle = self.vehicle
+        return vehicle.ignition if vehicle is not None else None

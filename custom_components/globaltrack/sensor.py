@@ -110,11 +110,17 @@ class GlobalTrackSensor(GlobalTrackEntity, SensorEntity):
     @property
     def native_value(self) -> Any:
         """Return the sensor value."""
-        return self.entity_description.value_fn(self.vehicle)
+        vehicle = self.vehicle
+        if vehicle is None:
+            return None
+        return self.entity_description.value_fn(vehicle)
 
     @property
     def extra_state_attributes(self) -> dict[str, Any] | None:
         """Return extra state attributes."""
-        if self.entity_description.extra_attrs_fn is not None:
-            return self.entity_description.extra_attrs_fn(self.vehicle)
-        return None
+        if self.entity_description.extra_attrs_fn is None:
+            return None
+        vehicle = self.vehicle
+        if vehicle is None:
+            return None
+        return self.entity_description.extra_attrs_fn(vehicle)

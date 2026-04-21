@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 from datetime import timedelta
 
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
@@ -24,11 +25,17 @@ _LOGGER = logging.getLogger(__name__)
 class GlobalTrackCoordinator(DataUpdateCoordinator[dict[int, VehicleData]]):
     """Coordinator to fetch vehicle data from GlobalTrack."""
 
-    def __init__(self, hass: HomeAssistant, api: GlobalTrackApi) -> None:
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        config_entry: ConfigEntry,
+        api: GlobalTrackApi,
+    ) -> None:
         """Initialize the coordinator."""
         super().__init__(
             hass,
             _LOGGER,
+            config_entry=config_entry,
             name=DOMAIN,
             update_interval=timedelta(seconds=DEFAULT_SCAN_INTERVAL),
         )
