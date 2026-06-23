@@ -1,6 +1,6 @@
 # GlobalTrack Vehicle Tracker
 
-[![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
+[![hacs_badge](https://img.shields.io/badge/HACS-Default-41BDF5.svg)](https://github.com/hacs/integration)
 [![GitHub release](https://img.shields.io/github/v/release/demoklion/home-assistant-globaltrack)](https://github.com/demoklion/home-assistant-globaltrack/releases)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
@@ -21,11 +21,12 @@ All entities update every 60 seconds via cloud polling.
 
 ### HACS (recommended)
 
+This integration is available in the **default HACS store** — no custom repository needed.
+
 1. Open HACS in your Home Assistant instance
-2. Go to **Integrations** > three-dot menu > **Custom repositories**
-3. Add this repository URL, category: **Integration**
-4. Search for "GlobalTrack" and install
-5. Restart Home Assistant
+2. Search for **GlobalTrack**
+3. Click **Download**
+4. Restart Home Assistant
 
 ### Manual
 
@@ -47,14 +48,14 @@ automation:
   - alias: "Car battery low voltage"
     trigger:
       - platform: numeric_state
-        entity_id: sensor.globaltrack_vw_tiguan_battery_voltage
+        entity_id: sensor.globaltrack_my_car_battery_voltage
         below: 12.0
         for: "00:30:00"
     action:
       - service: notify.mobile_app
         data:
           title: "Low car battery"
-          message: "Vehicle battery is at {{ states('sensor.globaltrack_vw_tiguan_battery_voltage') }} V"
+          message: "Vehicle battery is at {{ states('sensor.globaltrack_my_car_battery_voltage') }} V"
 ```
 
 ## Disclaimer
